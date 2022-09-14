@@ -18,9 +18,9 @@ NC='\033[0m' # No Color
 
 main () {
     if test -f "$authorFile"; then
-        echo "$authorFile exists."
+        echo -e "${WHITE}$authorFile${NC} exists."
     else
-        echo -e "${WHITE}$authorFile ${NC}doesn't exist, ${GREEN}will create a new${NC} one based on the repositories in ${WHITE}$repos. "
+        echo -e "${WHITE}$authorFile${NC} doesn't exist, ${GREEN}will create a new${NC} one based on the repositories in ${WHITE}$repos${NC}."
         findAllAuthors
     fi
 }
@@ -42,6 +42,10 @@ findAllAuthors() {
         # while replacing % with ' ' again
         echo $commiter"^"| sed 's/%/ /g' >> $authorFile
     done
+
+    echo -e "\n${WHITE}$authorFile${NC} created\nIn order to continue, copy the updated author data after the ${WHITE}^${NC}\n"
+    echo -e "${RED}Example 1${NC} changing author data\n${WHITE}pickle,pickle,pickle@gmail.com,pickle@gmail.com^${GREEN}yoda,yoda,yoda@gmail.com,yoda@gmail.com${NC}\n"
+    echo -e "${RED}Example 2${NC} data remains the same\n${WHITE}pickle,pickle,pickle@gmail.com,pickle@gmail.com^${GREEN}pickle,pickle,pickle@gmail.com,pickle@gmail.com${NC}\n"
 }
 
 findAuthors () {
