@@ -44,8 +44,8 @@ findAllAuthors() {
     done
 
     echo -e "\n${WHITE}$authorFile${NC} created\nIn order to continue, copy the updated author data after the ${WHITE}^${NC}\n"
-    echo -e "${RED}Example 1${NC} changing author data\n${WHITE}pickle,pickle,pickle@gmail.com,pickle@gmail.com,${GREEN}yoda,yoda,yoda@gmail.com,yoda@gmail.com\n"
-    echo -e "${RED}Example 2${NC} data remains the same\n${WHITE}pickle,pickle,pickle@gmail.com,pickle@gmail.com,${NC}\n"
+    echo -e "${RED}Example 1${NC} changing author data\n${WHITE}pickle,pickle@gmail.com,${GREEN}yoda,yoda@gmail.com\n"
+    echo -e "${RED}Example 2${NC} data remains the same\n${WHITE}pickle,pickle@gmail.com,${NC}\n"
     echo -e "${NC}Run the script again once completed"
 }
 
@@ -59,7 +59,7 @@ findAuthors () {
     # then remove duplicates
 
     # https://devhints.io/git-log-format - for git log formats and variables
-    local commiters=($(git log --pretty="format:%aN,%cN,%aE,%cE" | sed 's/ /%/g' | sort -u))
+    local commiters=($(git log --pretty="format:%cN,%cE" | sed 's/ /%/g' | sort -u))
     cd $currentDir
 
     # merge two arrays together, global one with local one
@@ -72,8 +72,12 @@ checkAuthorFile () {
         if [ "${line: -1}" != "," ]; then
             echo ""
             checkAuthorLine "${line}"
-            echo -e "Correcting ${GREEN}$(echo $line | cut -f 3 -d",")${NC} to ${GREEN}$(echo $line | cut -f 7 -d",")${NC}"
-            rewriteGit "${line}"
+            local wrongName=$(echo "${line}"| cut -f 1 -d",")
+            local wrongEmail=$(echo "${line}" | cut -f 2 -d",")
+            local correctName=$(echo "${line}" | cut -f 3 -d",")
+            local correctEmail=$(echo "${line}" | cut -f 4 -d",")
+            echo -e "Correcting ${RED}$wrongName <$wrongEmail>${NC} to ${GREEN}$correctName <$correctEmail>${NC}"
+            rewriteGit "$wrongName" "$wrongEmail" "$correctName" "$correctEmail"
         fi
     done < "${authorFile}"
 }
@@ -86,7 +90,7 @@ checkAuthorLine () {
     local numComma=$(grep -o "," <<<"$1" | wc -l | sed 's/ //g')
 
     #echo $numComma $numArrow $1
-    if [ "$numComma" != "7" ]; then
+    if [ "$numComma" != "3" ]; then
         echo -e "${RED}Error, line is incorrectly formatted\n${WHITE}$1${NC}"
         exit
     fi
@@ -94,8 +98,6 @@ checkAuthorLine () {
 }
 
 rewriteGit () {
-    # Takes in one string of author data (validated)
-    # https://www.git-tower.com/learn/git/faq/change-author-name-email/
     # This is very inefficient but it means I only have to deal with one
     # author to correct at a time - and plus, who is running this everyday?
 
@@ -105,7 +107,7 @@ rewriteGit () {
         if [ -d "$repo" ]; then
             cd $repo
 
-            gitFilter "$1"
+            gitFilter "$1" "$2" "$3" "$4"
             
             cd $currentDir
         fi
@@ -113,21 +115,18 @@ rewriteGit () {
 }
 
 gitFilter () {
+    # https://www.git-tower.com/learn/git/faq/change-author-name-email/
     # Takes in one string of author data (validated)
-    local wrongAName=$(echo $1 | cut -f 1 -d",")
-    local wrongCName=$(echo $1 | cut -f 2 -d",")
-    local wrongAEmail=$(echo $1 | cut -f 3 -d",")
-    local wrongCEmail=$(echo $1 | cut -f 4 -d",")
 
-    local correctAName=$(echo $1 | cut -f 5 -d",")
-    local correctCName=$(echo $1 | cut -f 6 -d",")
-    local correctAEmail=$(echo $1 | cut -f 7 -d",")
-    local correctCEmail=$(echo $1 | cut -f 8 -d",")
+    local wrongName=$1
+    local wrongEmail=$2
+    local correctName=$3
+    local correctEmail=$4
 
     git filter-branch -f --env-filter '
-    WRONG_EMAIL='$wrongAEmail'
-    NEW_NAME='$correctAName'
-    NEW_EMAIL='$correctAEmail'
+    WRONG_EMAIL='$wrongEmail'
+    NEW_NAME='$correctName'
+    NEW_EMAIL='$correctEmail'
 
     if [ "$GIT_COMMITTER_EMAIL" = "$WRONG_EMAIL" ]
     then
