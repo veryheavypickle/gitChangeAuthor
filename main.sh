@@ -17,7 +17,15 @@ export FILTER_BRANCH_SQUELCH_WARNING=1
 
 main () {
     if test -f "$authorFile"; then
+        echo -en "Do you wish to force upload the repos to git once completed?\n${RED}WARNING THIS IS DANGEROUS, PLS STORE A BACKUP OF YOUR REPOS${NC}\n(y/n): "
+        read option
+        if [ "$option" == "y" ]; then
+            echo -e "Will upload modified repos with ${WHITE}-f${NC} flag once completed"
+        fi
         checkAuthorFile
+        if [ "$option" == "y" ]; then
+            gitUpload
+        fi
     else
         echo -e "${WHITE}$authorFile${NC} doesn't exist, ${GREEN}will create a new${NC} one based on the repositories in ${WHITE}$repos${NC}."
         findAllAuthors
@@ -33,6 +41,7 @@ findAllAuthors() {
     done
 
     # remove dups again
+    authors=$(echo $authors | sort -u)
     authors=$(echo $authors | sort -u)
     
     for commiter in "${authors[@]}";
@@ -140,4 +149,14 @@ gitFilter () {
     ' --tag-name-filter cat -- --branches --tags
 }
 
+gitUpload () {
+    for repo in $repos*;
+    do
+        if [ -d "$repo" ]; then
+            cd $repo
+            git push -f
+            cd $currentDir
+        fi
+    done
+}
 main
