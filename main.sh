@@ -17,7 +17,6 @@ export FILTER_BRANCH_SQUELCH_WARNING=1
 
 main () {
     if test -f "$authorFile"; then
-        echo -e "${WHITE}$authorFile${NC} exists."
         checkAuthorFile
     else
         echo -e "${WHITE}$authorFile${NC} doesn't exist, ${GREEN}will create a new${NC} one based on the repositories in ${WHITE}$repos${NC}."
@@ -59,7 +58,7 @@ findAuthors () {
     # then remove duplicates
 
     # https://devhints.io/git-log-format - for git log formats and variables
-    local commiters=($(git log --pretty="format:%cN,%cE" | sed 's/ /%/g' | sort -u))
+    local commiters=($(git log --pretty="format:%aN,%aE" | sed 's/ /%/g' | sort -u))
     cd $currentDir
 
     # merge two arrays together, global one with local one
