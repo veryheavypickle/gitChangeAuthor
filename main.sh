@@ -12,6 +12,9 @@ GREEN='\033[0;32m'
 WHITE='\033[0;36m'
 NC='\033[0m' # No Color
 
+# remove this and see what happens :)
+export FILTER_BRANCH_SQUELCH_WARNING=1
+
 main () {
     if test -f "$authorFile"; then
         echo -e "${WHITE}$authorFile${NC} exists."
@@ -67,8 +70,9 @@ checkAuthorFile () {
     while read line; do
         # if line does not end with ,
         if [ "${line: -1}" != "," ]; then
+            echo ""
             checkAuthorLine "${line}"
-            echo -e "Correcting ${GREEN}$(echo $1 | cut -f 3 -d",")${NC} to ${GREEN}$(echo $1 | cut -f 7 -d",")"
+            echo -e "Correcting ${GREEN}$(echo $line | cut -f 3 -d",")${NC} to ${GREEN}$(echo $line | cut -f 7 -d",")${NC}"
             rewriteGit "${line}"
         fi
     done < "${authorFile}"
@@ -120,7 +124,7 @@ gitFilter () {
     local correctAEmail=$(echo $1 | cut -f 7 -d",")
     local correctCEmail=$(echo $1 | cut -f 8 -d",")
 
-    git filter-branch --env-filter '
+    git filter-branch -f --env-filter '
     WRONG_EMAIL='$wrongAEmail'
     NEW_NAME='$correctAName'
     NEW_EMAIL='$correctAEmail'
