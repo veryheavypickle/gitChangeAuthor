@@ -2,6 +2,7 @@
 
 # the directory that stores the repos
 repos="repositories/"
+currentDir=$(pwd)
 
 
 # https://www.git-tower.com/learn/git/faq/change-author-name-email/
@@ -21,10 +22,15 @@ findAuthors () {
     # This function will find all current authors in the repos provided as a list
 
     cd $1
-    echo ""
-    git log --pretty="format:%aN, %cN, %aE, %cE"
-    echo ""
-    cd ..
+    # get all author and commiter data, then replace any spaces with '%'
+    # bc bash CANNOT handle spaces
+    commiters=($(git log --pretty="format:%aN,%cN,%aE,%cE" | sed 's/ /%/g'))
+    cd $currentDir
+    for commiter in "${commiters[@]}";
+    do
+        echo $commiter
+    done
+
 }
 
 main
