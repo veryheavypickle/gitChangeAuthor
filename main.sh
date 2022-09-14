@@ -43,7 +43,7 @@ findAllAuthors() {
         echo $commiter","| sed 's/%/ /g' >> $authorFile
     done
 
-    echo -e "\n${WHITE}$authorFile${NC} created\nIn order to continue, copy the updated author data after the ${WHITE}^${NC}\n"
+    echo -e "${WHITE}$authorFile${NC} created\nIn order to continue, copy the updated author data after the ${WHITE},${NC}\n"
     echo -e "${RED}Example 1${NC} changing author data\n${WHITE}pickle,pickle@gmail.com,${GREEN}yoda,yoda@gmail.com\n"
     echo -e "${RED}Example 2${NC} data remains the same\n${WHITE}pickle,pickle@gmail.com,${NC}\n"
     echo -e "${NC}Run the script again once completed"
