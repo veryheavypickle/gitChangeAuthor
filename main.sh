@@ -68,6 +68,7 @@ checkAuthorFile () {
         # if line does not end with ,
         if [ "${line: -1}" != "," ]; then
             checkAuthorLine "${line}"
+            echo -e "Correcting ${GREEN}$(echo $1 | cut -f 3 -d",")${NC} to ${GREEN}$(echo $1 | cut -f 7 -d",")"
             rewriteGit "${line}"
         fi
     done < "${authorFile}"
@@ -100,9 +101,8 @@ rewriteGit () {
         if [ -d "$repo" ]; then
             cd $repo
 
-            # magic
-            echo $1
-             
+            gitFilter "$1"
+            
             cd $currentDir
         fi
     done
@@ -110,12 +110,20 @@ rewriteGit () {
 
 gitFilter () {
     # Takes in one string of author data (validated)
+    local wrongAName=$(echo $1 | cut -f 1 -d",")
+    local wrongCName=$(echo $1 | cut -f 2 -d",")
+    local wrongAEmail=$(echo $1 | cut -f 3 -d",")
+    local wrongCEmail=$(echo $1 | cut -f 4 -d",")
 
+    local correctAName=$(echo $1 | cut -f 5 -d",")
+    local correctCName=$(echo $1 | cut -f 6 -d",")
+    local correctAEmail=$(echo $1 | cut -f 7 -d",")
+    local correctCEmail=$(echo $1 | cut -f 8 -d",")
 
     git filter-branch --env-filter '
-    WRONG_EMAIL='wrong@example.com'
-    NEW_NAME="New Name Value"
-    NEW_EMAIL="correct@example.com"
+    WRONG_EMAIL='$wrongAEmail'
+    NEW_NAME='$correctAName'
+    NEW_EMAIL='$correctAEmail'
 
     if [ "$GIT_COMMITTER_EMAIL" = "$WRONG_EMAIL" ]
     then
