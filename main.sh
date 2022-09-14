@@ -42,7 +42,6 @@ findAllAuthors() {
 
     # remove dups again
     authors=$(echo $authors | sort -u)
-    authors=$(echo $authors | sort -u)
     
     for commiter in "${authors[@]}";
     do
